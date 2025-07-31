@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/expedition_companion?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=expedition_user
+      - SPRING_DATASOURCE_PASSWORD=expedition_password
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - expedition-network
+    restart: unless-stopped
+    volumes:
+      - app_logs:/app/logs
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=expedition_companion
+      - MYSQL_USER=expedition_user
+      - MYSQL_PASSWORD=expedition_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - expedition-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      interval: 30s
+      start_period: 30s
+
+  # Optional: phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=expedition_user
+      - PMA_PASSWORD=expedition_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - expedition-network
+    profiles:
+      - dev
+
+volumes:
+  mysql_data:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  expedition-network:
+    driver: bridge

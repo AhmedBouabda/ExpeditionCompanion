@@ -31,3 +31,27 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Application Specific ###
+logs/
+*.log
+*.log.*
+
+### Local Configuration ###
+src/main/resources/application-development.properties
+src/main/resources/application-production.properties
+src/main/resources/application-local.properties
+
+### Docker ###
+.docker/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Temporary Files ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
